@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Farming Agent — IBM Watsonx.ai</title>
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+
+<body>
+
+<!-- ═══════════════════════════════ NAVBAR ══════════════════════════════════ -->
+<nav class="navbar navbar-expand-lg sfa-navbar sticky-top">
+  <div class="container-fluid px-3 px-md-4">
+    <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+      <div class="brand-icon">🌾</div>
+      <div>
+        <span class="brand-title">Smart Farming Agent</span>
+        <span class="brand-subtitle d-none d-sm-inline">Powered by IBM Watsonx.ai</span>
+      </div>
+    </a>
+
+    <div class="d-flex align-items-center gap-2 ms-auto">
+      <!-- Status Badge — clickable to open setup guide -->
+      <button id="statusBadge" class="badge status-badge-demo border-0"
+              data-bs-toggle="modal" data-bs-target="#setupModal"
+              title="Click to view setup guide">
+        <i class="bi bi-circle-fill me-1" style="font-size:0.55rem"></i>Demo
+      </button>
+
+      <!-- Language Switcher -->
+      <div class="dropdown">
+        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+          <i class="bi bi-translate me-1"></i><span id="currentLang">EN</span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li><a class="dropdown-item lang-option" data-lang="English" href="#">🇬🇧 English</a></li>
+          <li><a class="dropdown-item lang-option" data-lang="Hindi" href="#">🇮🇳 हिंदी</a></li>
+          <li><a class="dropdown-item lang-option" data-lang="Marathi" href="#">🏔️ मराठी</a></li>
+        </ul>
+      </div>
+
+      <!-- Dark Mode Toggle -->
+      <button id="themeToggle" class="btn btn-sm btn-outline-secondary" title="Toggle dark mode">
+        <i class="bi bi-moon-stars-fill"></i>
+      </button>
+
+      <!-- Mobile menu -->
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarOffcanvas">
+        <i class="bi bi-list fs-4"></i>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════ LAYOUT ══════════════════════════════════ -->
+<div class="sfa-layout">
+
+  <!-- ─── SIDEBAR (desktop) ─────────────────────────────────────────────── -->
+  <aside class="sfa-sidebar d-none d-lg-flex flex-column">
+    <div class="sidebar-inner">
+
+      <!-- Farm Profile Card -->
+      <div class="sidebar-card">
+        <div class="sidebar-card-header">
+          <i class="bi bi-person-vcard-fill text-success me-2"></i>Farm Profile
+        </div>
+        <div class="sidebar-card-body">
+          <label class="form-label small">👨‍🌾 Farmer Name</label>
+          <input type="text" id="farmerName" class="form-control form-control-sm mb-2" placeholder="e.g. Ramesh Patil" />
+
+          <label class="form-label small">📍 Location / District</label>
+          <input type="text" id="farmerLocation" class="form-control form-control-sm mb-2" placeholder="e.g. Yavatmal, Maharashtra" />
+
+          <label class="form-label small">🌱 Current Crop</label>
+          <select id="currentCrop" class="form-select form-select-sm mb-2">
+            <option value="">Select crop…</option>
+            <option value="cotton">Cotton</option>
+            <option value="wheat">Wheat</option>
+            <option value="sugarcane">Sugarcane</option>
+            <option value="rice">Rice (Paddy)</option>
+            <option value="soybean">Soybean</option>
+            <option value="onion">Onion</option>
+            <option value="tur dal">Tur Dal (Pigeon Pea)</option>
+            <option value="chickpea">Chickpea</option>
+            <option value="maize">Maize</option>
+            <option value="groundnut">Groundnut</option>
+          </select>
+
+          <label class="form-label small">🌾 Season</label>
+          <select id="farmSeason" class="form-select form-select-sm mb-2">
+            <option value="kharif">Kharif (June–Oct)</option>
+            <option value="rabi">Rabi (Nov–Mar)</option>
+            <option value="zaid">Zaid (Apr–Jun)</option>
+          </select>
+
+          <button id="saveProfileBtn" class="btn btn-sm btn-success w-100 mt-1">
+            <i class="bi bi-floppy-fill me-1"></i>Save Profile
+          </button>
+        </div>
+      </div>
+
+      <!-- Soil & Weather Card -->
+      <div class="sidebar-card">
+        <div class="sidebar-card-header">
+          <i class="bi bi-moisture text-warning me-2"></i>Soil & Weather
+        </div>
+        <div class="sidebar-card-body">
+          <label class="form-label small">🌱 Soil Type</label>
+          <select id="soilType" class="form-select form-select-sm mb-2">
+            <option value="">Select…</option>
+            <option value="black cotton soil">Black Cotton Soil</option>
+            <option value="red laterite soil">Red Laterite Soil</option>
+            <option value="alluvial soil">Alluvial Soil</option>
+            <option value="sandy loam">Sandy Loam</option>
+            <option value="clay loam">Clay Loam</option>
+            <option value="loamy soil">Loamy Soil</option>
+          </select>
+
+          <label class="form-label small">⚗️ Soil pH</label>
+          <input type="number" id="soilPh" class="form-control form-control-sm mb-2" min="4" max="10" step="0.1" placeholder="e.g. 6.5" />
+
+          <label class="form-label small">🌡️ Temperature (°C)</label>
+          <input type="number" id="temperature" class="form-control form-control-sm mb-2" placeholder="e.g. 35" />
+
+          <label class="form-label small">💧 Last Rainfall (mm)</label>
+          <input type="number" id="rainfall" class="form-control form-control-sm mb-2" placeholder="e.g. 45" />
+
+          <button id="saveSoilBtn" class="btn btn-sm btn-warning w-100 mt-1">
+            <i class="bi bi-cloud-upload-fill me-1"></i>Update Context
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="sidebar-card">
+        <div class="sidebar-card-header">
+          <i class="bi bi-lightning-charge-fill text-primary me-2"></i>Quick Advisory
+        </div>
+        <div class="sidebar-card-body d-flex flex-column gap-2">
+          <button class="btn btn-sm quick-btn" data-category="fertilizer">
+            <i class="bi bi-bag-fill me-2"></i>Fertiliser Schedule
+          </button>
+          <button class="btn btn-sm quick-btn" data-category="irrigation">
+            <i class="bi bi-droplet-fill me-2"></i>Irrigation Plan
+          </button>
+          <button class="btn btn-sm quick-btn" data-category="pest">
+            <i class="bi bi-bug-fill me-2"></i>Pest &amp; Disease Guide
+          </button>
+          <button class="btn btn-sm quick-btn" data-category="weather">
+            <i class="bi bi-thermometer-sun me-2"></i>Weather Tips
+          </button>
+          <button class="btn btn-sm quick-btn" data-category="market">
+            <i class="bi bi-graph-up-arrow me-2"></i>Market Prices (MSP)
+          </button>
+          <button class="btn btn-sm quick-btn" data-category="schemes">
+            <i class="bi bi-bank2 me-2"></i>Govt. Schemes
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </aside>
+
+  <!-- ─── MAIN CONTENT ──────────────────────────────────────────────────── -->
+  <main class="sfa-main">
+
+    <!-- Dashboard Strip -->
+    <div class="dashboard-strip">
+      <div class="dash-card" id="dashCrop">
+        <div class="dash-icon">🌱</div>
+        <div>
+          <div class="dash-label">Active Crop</div>
+          <div class="dash-value" id="dashCropVal">—</div>
+        </div>
+      </div>
+      <div class="dash-card" id="dashSoil">
+        <div class="dash-icon">🌍</div>
+        <div>
+          <div class="dash-label">Soil Type</div>
+          <div class="dash-value" id="dashSoilVal">—</div>
+        </div>
+      </div>
+      <div class="dash-card" id="dashWeather">
+        <div class="dash-icon">🌡️</div>
+        <div>
+          <div class="dash-label">Temperature</div>
+          <div class="dash-value" id="dashTempVal">—</div>
+        </div>
+      </div>
+      <div class="dash-card" id="dashRain">
+        <div class="dash-icon">🌧️</div>
+        <div>
+          <div class="dash-label">Last Rainfall</div>
+          <div class="dash-value" id="dashRainVal">—</div>
+        </div>
+      </div>
+      <div class="dash-card" id="dashSeason">
+        <div class="dash-icon">📅</div>
+        <div>
+          <div class="dash-label">Season</div>
+          <div class="dash-value" id="dashSeasonVal">Kharif</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CHAT AREA ──────────────────────────────────────────────────── -->
+    <div class="chat-container">
+
+      <!-- Chat Header -->
+      <div class="chat-header">
+        <div class="d-flex align-items-center gap-2">
+          <div class="agent-avatar">🤖</div>
+          <div>
+            <div class="chat-agent-name">Krishi AI Agent</div>
+            <div class="chat-agent-sub">IBM Watsonx.ai · Granite Model</div>
+          </div>
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn btn-sm btn-outline-secondary d-lg-none" data-bs-toggle="offcanvas" data-bs-target="#sidebarOffcanvas" title="Open panel">
+            <i class="bi bi-sliders"></i>
+          </button>
+          <button id="clearChatBtn" class="btn btn-sm btn-outline-danger" title="Clear chat">
+            <i class="bi bi-trash3-fill"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Messages -->
+      <div class="chat-messages" id="chatMessages">
+        <!-- Welcome Message -->
+        <div class="message agent-message">
+          <div class="message-avatar">🌾</div>
+          <div class="message-body">
+            <div class="message-content">
+              <p>🙏 <strong>Namaste!</strong> I am your Smart Farming Agent powered by IBM Watsonx.ai.</p>
+              <p>I can help you with:</p>
+              <ul class="mb-2">
+                <li>🌱 <strong>Crop Advisory</strong> — Sowing to harvesting guidance</li>
+                <li>💊 <strong>Fertiliser & Irrigation</strong> — Precise schedules</li>
+                <li>🐛 <strong>Pest/Disease ID</strong> — Upload a crop photo!</li>
+                <li>🌤️ <strong>Weather Tips</strong> — Season-specific advice</li>
+                <li>📊 <strong>Market Prices</strong> — MSP & mandi awareness</li>
+                <li>🏛️ <strong>Govt. Schemes</strong> — PM-KISAN, PMFBY, etc.</li>
+              </ul>
+              <p class="mb-0"><em>Ask me anything in English, Hindi, or Marathi! 🌾</em></p>
+            </div>
+            <div class="message-time">Just now</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Typing Indicator -->
+      <div class="typing-indicator" id="typingIndicator" style="display:none">
+        <div class="message agent-message">
+          <div class="message-avatar">🌾</div>
+          <div class="message-body">
+            <div class="message-content typing-dots">
+              <span></span><span></span><span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Image Preview -->
+      <div id="imagePreviewBar" class="image-preview-bar" style="display:none">
+        <div class="d-flex align-items-center gap-2">
+          <img id="imageThumb" class="img-thumbnail" style="height:50px;width:50px;object-fit:cover" />
+          <span class="small text-muted">Image attached (pest/disease)</span>
+          <button id="removeImageBtn" class="btn btn-sm btn-outline-danger ms-auto">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Input Bar -->
+      <div class="chat-input-area">
+        <div class="input-group-wrapper">
+          <!-- Image Upload -->
+          <button id="imageUploadBtn" class="input-action-btn" title="Upload crop/pest image">
+            <i class="bi bi-camera-fill"></i>
+          </button>
+          <input type="file" id="imageFileInput" accept="image/*" style="display:none" />
+
+          <textarea id="chatInput" class="chat-textarea" rows="1"
+            placeholder="Ask about your crop, pest, soil, weather... (English / हिंदी / मराठी)"></textarea>
+
+          <!-- Voice input hint -->
+          <button id="voiceBtn" class="input-action-btn" title="Voice tip: speak in your language">
+            <i class="bi bi-mic-fill"></i>
+          </button>
+
+          <button id="sendBtn" class="send-btn" title="Send message">
+            <i class="bi bi-send-fill"></i>
+          </button>
+        </div>
+
+        <!-- Suggested Quick Questions -->
+        <div class="suggested-chips" id="suggestedChips">
+          <button class="chip" data-msg="What is the best sowing time for cotton in Maharashtra?">🌱 Cotton sowing</button>
+          <button class="chip" data-msg="How to identify whitefly on cotton leaves?">🐛 Pest ID</button>
+          <button class="chip" data-msg="Give me a fertilizer schedule for wheat rabi crop">💊 Fertilizer</button>
+          <button class="chip" data-msg="What government schemes are available for farmers in 2024?">🏛️ Schemes</button>
+          <button class="chip" data-msg="What is the current MSP for soybean in India?">📊 MSP Price</button>
+        </div>
+      </div>
+
+    </div>
+    <!-- End Chat Container -->
+
+  </main>
+</div>
+
+
+<!-- ═══════════════════ MOBILE SIDEBAR OFFCANVAS ════════════════════════════ -->
+<div class="offcanvas offcanvas-start sfa-offcanvas" tabindex="-1" id="sidebarOffcanvas">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title">🌾 Farm Settings</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+  </div>
+  <div class="offcanvas-body p-0">
+    <!-- Mirror of sidebar content (auto-synced by JS) -->
+    <div class="sidebar-inner mobile-sidebar">
+
+      <div class="sidebar-card">
+        <div class="sidebar-card-header"><i class="bi bi-person-vcard-fill text-success me-2"></i>Farm Profile</div>
+        <div class="sidebar-card-body">
+          <label class="form-label small">👨‍🌾 Farmer Name</label>
+          <input type="text" id="mFarmerName" class="form-control form-control-sm mb-2" placeholder="e.g. Ramesh Patil" />
+          <label class="form-label small">📍 Location</label>
+          <input type="text" id="mFarmerLocation" class="form-control form-control-sm mb-2" placeholder="e.g. Yavatmal" />
+          <label class="form-label small">🌱 Current Crop</label>
+          <select id="mCurrentCrop" class="form-select form-select-sm mb-2">
+            <option value="">Select crop…</option>
+            <option value="cotton">Cotton</option>
+            <option value="wheat">Wheat</option>
+            <option value="sugarcane">Sugarcane</option>
+            <option value="rice">Rice (Paddy)</option>
+            <option value="soybean">Soybean</option>
+            <option value="onion">Onion</option>
+            <option value="tur dal">Tur Dal</option>
+            <option value="chickpea">Chickpea</option>
+          </select>
+          <label class="form-label small">🌾 Season</label>
+          <select id="mFarmSeason" class="form-select form-select-sm mb-2">
+            <option value="kharif">Kharif</option>
+            <option value="rabi">Rabi</option>
+            <option value="zaid">Zaid</option>
+          </select>
+          <button id="mSaveProfileBtn" class="btn btn-sm btn-success w-100 mt-1"><i class="bi bi-floppy-fill me-1"></i>Save Profile</button>
+        </div>
+      </div>
+
+      <div class="sidebar-card">
+        <div class="sidebar-card-header"><i class="bi bi-moisture text-warning me-2"></i>Soil & Weather</div>
+        <div class="sidebar-card-body">
+          <label class="form-label small">🌱 Soil Type</label>
+          <select id="mSoilType" class="form-select form-select-sm mb-2">
+            <option value="">Select…</option>
+            <option value="black cotton soil">Black Cotton Soil</option>
+            <option value="red laterite soil">Red Laterite Soil</option>
+            <option value="alluvial soil">Alluvial Soil</option>
+            <option value="sandy loam">Sandy Loam</option>
+            <option value="clay loam">Clay Loam</option>
+            <option value="loamy soil">Loamy Soil</option>
+          </select>
+          <label class="form-label small">⚗️ Soil pH</label>
+          <input type="number" id="mSoilPh" class="form-control form-control-sm mb-2" placeholder="e.g. 6.5" />
+          <label class="form-label small">🌡️ Temperature (°C)</label>
+          <input type="number" id="mTemperature" class="form-control form-control-sm mb-2" placeholder="e.g. 35" />
+          <label class="form-label small">💧 Last Rainfall (mm)</label>
+          <input type="number" id="mRainfall" class="form-control form-control-sm mb-2" placeholder="e.g. 45" />
+          <button id="mSaveSoilBtn" class="btn btn-sm btn-warning w-100 mt-1"><i class="bi bi-cloud-upload-fill me-1"></i>Update Context</button>
+        </div>
+      </div>
+
+      <div class="sidebar-card">
+        <div class="sidebar-card-header"><i class="bi bi-lightning-charge-fill text-primary me-2"></i>Quick Advisory</div>
+        <div class="sidebar-card-body d-flex flex-column gap-2">
+          <button class="btn btn-sm quick-btn" data-category="fertilizer"><i class="bi bi-bag-fill me-2"></i>Fertiliser Schedule</button>
+          <button class="btn btn-sm quick-btn" data-category="irrigation"><i class="bi bi-droplet-fill me-2"></i>Irrigation Plan</button>
+          <button class="btn btn-sm quick-btn" data-category="pest"><i class="bi bi-bug-fill me-2"></i>Pest &amp; Disease Guide</button>
+          <button class="btn btn-sm quick-btn" data-category="weather"><i class="bi bi-thermometer-sun me-2"></i>Weather Tips</button>
+          <button class="btn btn-sm quick-btn" data-category="market"><i class="bi bi-graph-up-arrow me-2"></i>Market Prices (MSP)</button>
+          <button class="btn btn-sm quick-btn" data-category="schemes"><i class="bi bi-bank2 me-2"></i>Govt. Schemes</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════ TOAST NOTIFICATIONS ═════════════════════════════════ -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index:9999">
+  <div id="notifToast" class="toast align-items-center border-0" role="alert">
+    <div class="d-flex">
+      <div class="toast-body" id="toastMsg">Profile saved!</div>
+      <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════ SETUP GUIDE MODAL ═══════════════════════════════════ -->
+<div class="modal fade" id="setupModal" tabindex="-1" aria-labelledby="setupModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content sfa-modal">
+      <div class="modal-header sfa-modal-header">
+        <h5 class="modal-title" id="setupModalLabel">
+          🔑 Connect IBM Watsonx.ai — Setup Guide
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-0">
+
+        <!-- Connection Status Checklist -->
+        <div class="setup-status-bar" id="setupStatusBar">
+          <div class="d-flex align-items-center gap-2">
+            <div id="setupSpinner" class="spinner-border spinner-border-sm text-success" role="status"></div>
+            <span id="setupStatusMsg" class="small">Checking configuration…</span>
+          </div>
+        </div>
+
+        <div class="p-4">
+          <!-- Checklist -->
+          <div id="setupChecklist" class="setup-checklist mb-4">
+            <div class="check-item" id="chk-env_file_loaded">
+              <span class="check-icon">⏳</span>
+              <div>
+                <strong>.env file loaded</strong>
+                <div class="check-desc text-muted small">Environment variables are being read by Flask.</div>
+              </div>
+            </div>
+            <div class="check-item" id="chk-api_key_set">
+              <span class="check-icon">⏳</span>
+              <div>
+                <strong>IBM_API_KEY set</strong>
+                <div class="check-desc text-muted small">Your IBM Cloud API key is configured.</div>
+              </div>
+            </div>
+            <div class="check-item" id="chk-project_id_set">
+              <span class="check-icon">⏳</span>
+              <div>
+                <strong>IBM_PROJECT_ID set</strong>
+                <div class="check-desc text-muted small">Your Watsonx.ai project ID is configured.</div>
+              </div>
+            </div>
+            <div class="check-item" id="chk-sdk_installed">
+              <span class="check-icon">⏳</span>
+              <div>
+                <strong>ibm-watsonx-ai SDK installed</strong>
+                <div class="check-desc text-muted small">Python package is installed in your virtual environment.</div>
+              </div>
+            </div>
+            <div class="check-item" id="chk-model_connected">
+              <span class="check-icon">⏳</span>
+              <div>
+                <strong>Granite model connected</strong>
+                <div class="check-desc text-muted small">Successfully authenticated and reached Watsonx.ai API.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step-by-step instructions -->
+          <h6 class="fw-bold mb-3" style="color:var(--text)">📋 Quick Setup Steps</h6>
+
+          <div class="setup-steps">
+            <div class="setup-step">
+              <div class="step-number">1</div>
+              <div class="step-content">
+                <strong>Create IBM Cloud account</strong>
+                <p class="mb-0 small text-muted">Go to <a href="https://cloud.ibm.com" target="_blank">cloud.ibm.com</a> → Sign up (free tier available) → Open <strong>Watsonx.ai Studio</strong></p>
+              </div>
+            </div>
+            <div class="setup-step">
+              <div class="step-number">2</div>
+              <div class="step-content">
+                <strong>Get your API Key</strong>
+                <p class="mb-0 small text-muted">IBM Cloud → Manage → Access (IAM) → API keys → <strong>Create an IBM Cloud API key</strong></p>
+                <code class="setup-code mt-1">IBM_API_KEY=your_key_here</code>
+              </div>
+            </div>
+            <div class="setup-step">
+              <div class="step-number">3</div>
+              <div class="step-content">
+                <strong>Get your Project ID</strong>
+                <p class="mb-0 small text-muted">Watsonx Studio → Create/open a Project → Settings → General → copy the <strong>Project ID</strong></p>
+                <code class="setup-code mt-1">IBM_PROJECT_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</code>
+              </div>
+            </div>
+            <div class="setup-step">
+              <div class="step-number">4</div>
+              <div class="step-content">
+                <strong>Edit your .env file</strong>
+                <p class="mb-0 small text-muted">Open <strong>.env</strong> in your project folder and fill in both values, then <strong>restart</strong> the Flask server.</p>
+                <div class="setup-code-block mt-1">
+IBM_API_KEY=your_actual_api_key<br>
+IBM_PROJECT_ID=your_actual_project_id<br>
+IBM_WATSONX_URL=https://us-south.ml.cloud.ibm.com
+                </div>
+              </div>
+            </div>
+            <div class="setup-step">
+              <div class="step-number">5</div>
+              <div class="step-content">
+                <strong>Restart Flask &amp; test</strong>
+                <p class="mb-0 small text-muted">Stop the server (<kbd>Ctrl+C</kbd>) and restart: <code>python app.py</code></p>
+                <p class="mb-0 small text-muted mt-1">The status badge will turn <span style="color:#22c55e;font-weight:600">● Live</span> when connected.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Next step hint / error detail -->
+          <div id="setupNextStep" class="setup-next-step mt-3" style="display:none">
+            <i class="bi bi-arrow-right-circle-fill me-2 flex-shrink-0"></i>
+            <span id="setupNextStepText"></span>
+          </div>
+
+          <!-- Error detail box (shown when model_connected fails) -->
+          <div id="setupErrorBox" class="setup-error-box mt-3" style="display:none">
+            <div class="d-flex align-items-center gap-2 mb-2">
+              <i class="bi bi-exclamation-triangle-fill text-danger"></i>
+              <strong style="font-size:.87rem">Connection Error Detail</strong>
+            </div>
+            <div id="setupErrorText" class="setup-error-text"></div>
+          </div>
+
+          <!-- Diagnose results panel -->
+          <div id="diagnosePanel" class="diagnose-panel mt-3" style="display:none">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <strong style="font-size:.87rem"><i class="bi bi-terminal-fill me-1"></i>Diagnostic Output</strong>
+              <button id="closeDiagnoseBtn" class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size:.75rem">✕ Close</button>
+            </div>
+            <div id="diagnoseOutput" class="diagnose-output"></div>
+          </div>
+
+        </div>
+      </div>
+      <div class="modal-footer sfa-modal-footer">
+        <!-- Test Connection button -->
+        <button id="testConnectionBtn" class="btn btn-sm btn-primary me-auto">
+          <i class="bi bi-wifi me-1"></i>Test Connection
+        </button>
+        <a href="https://cloud.ibm.com/watsonx" target="_blank" class="btn btn-sm btn-outline-secondary">
+          <i class="bi bi-box-arrow-up-right me-1"></i>Open IBM Watsonx.ai
+        </a>
+        <a href="https://dataplatform.cloud.ibm.com/docs/content/wsj/analyze-data/fm-models.html" target="_blank" class="btn btn-sm btn-outline-secondary">
+          <i class="bi bi-book me-1"></i>Model Docs
+        </a>
+        <button type="button" class="btn btn-sm btn-success" data-bs-dismiss="modal">
+          <i class="bi bi-check2 me-1"></i>Got it!
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Marked.js (markdown rendering) -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<!-- App JS -->
+<script src="/static/js/main.js"></script>
+</body>
+</html>

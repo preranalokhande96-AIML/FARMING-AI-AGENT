@@ -1,0 +1,7 @@
+flask==3.0.3
+python-dotenv==1.0.1
+ibm-watsonx-ai==1.1.2
+requests==2.32.3
+Pillow==10.4.0
+gunicorn==22.0.0
+flask-cors==4.0.1
